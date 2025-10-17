@@ -3,15 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Check, Play, Square } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft, Check, Play, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { SleepRecord } from "@/types/baby";
 
 interface SleepFormProps {
   onBack: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: SleepRecord) => void;
+  records: SleepRecord[];
+  onDelete: (id: string) => void;
 }
 
-export const SleepForm = ({ onBack, onSave }: SleepFormProps) => {
+export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps) => {
   const [isTracking, setIsTracking] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [sleepType, setSleepType] = useState<string>("nap");
@@ -28,12 +32,12 @@ export const SleepForm = ({ onBack, onSave }: SleepFormProps) => {
     const endTime = new Date();
     const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000 / 60);
 
-    const data = {
+    const data: SleepRecord = {
       id: Date.now().toString(),
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       duration,
-      type: sleepType,
+      type: sleepType as 'night' | 'nap',
     };
 
     onSave(data);
@@ -43,7 +47,11 @@ export const SleepForm = ({ onBack, onSave }: SleepFormProps) => {
     
     setIsTracking(false);
     setStartTime(null);
-    onBack();
+  };
+
+  const handleDelete = (id: string) => {
+    onDelete(id);
+    toast.success("記錄已刪除");
   };
 
   return (
@@ -98,6 +106,46 @@ export const SleepForm = ({ onBack, onSave }: SleepFormProps) => {
           )}
         </div>
       </Card>
+
+      {records.length > 0 && (
+        <Card className="p-6 shadow-card mt-6">
+          <h3 className="text-lg font-semibold mb-4">歷史記錄</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>開始時間</TableHead>
+                <TableHead>類型</TableHead>
+                <TableHead>時長</TableHead>
+                <TableHead className="text-right">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {records.slice().reverse().map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell className="text-sm">
+                    {new Date(record.startTime).toLocaleString('zh-TW')}
+                  </TableCell>
+                  <TableCell>
+                    {record.type === 'night' ? '夜間睡眠' : '白天小睡'}
+                  </TableCell>
+                  <TableCell>
+                    {record.duration && `${Math.floor(record.duration / 60)}小時${record.duration % 60}分鐘`}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(record.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 };

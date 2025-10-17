@@ -16,19 +16,83 @@ const Index = () => {
   const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
 
   const handleSaveFeeding = (data: FeedingRecord) => {
-    setFeedingRecords([...feedingRecords, data]);
+    const existingIndex = feedingRecords.findIndex(r => r.id === data.id);
+    if (existingIndex >= 0) {
+      const updated = [...feedingRecords];
+      updated[existingIndex] = data;
+      setFeedingRecords(updated);
+    } else {
+      setFeedingRecords([...feedingRecords, data]);
+    }
+  };
+
+  const handleDeleteFeeding = (id: string) => {
+    setFeedingRecords(feedingRecords.filter(r => r.id !== id));
   };
 
   const handleSaveSleep = (data: SleepRecord) => {
-    setSleepRecords([...sleepRecords, data]);
+    const existingIndex = sleepRecords.findIndex(r => r.id === data.id);
+    if (existingIndex >= 0) {
+      const updated = [...sleepRecords];
+      updated[existingIndex] = data;
+      setSleepRecords(updated);
+    } else {
+      setSleepRecords([...sleepRecords, data]);
+    }
+  };
+
+  const handleDeleteSleep = (id: string) => {
+    setSleepRecords(sleepRecords.filter(r => r.id !== id));
   };
 
   const handleSaveDiaper = (data: DiaperRecord) => {
-    setDiaperRecords([...diaperRecords, data]);
+    const existingIndex = diaperRecords.findIndex(r => r.id === data.id);
+    if (existingIndex >= 0) {
+      const updated = [...diaperRecords];
+      updated[existingIndex] = data;
+      setDiaperRecords(updated);
+    } else {
+      setDiaperRecords([...diaperRecords, data]);
+    }
+  };
+
+  const handleDeleteDiaper = (id: string) => {
+    setDiaperRecords(diaperRecords.filter(r => r.id !== id));
   };
 
   const handleSaveHealth = (data: HealthRecord) => {
-    setHealthRecords([...healthRecords, data]);
+    const existingIndex = healthRecords.findIndex(r => r.id === data.id);
+    if (existingIndex >= 0) {
+      const updated = [...healthRecords];
+      updated[existingIndex] = data;
+      setHealthRecords(updated);
+    } else {
+      setHealthRecords([...healthRecords, data]);
+    }
+  };
+
+  const handleDeleteHealth = (id: string) => {
+    setHealthRecords(healthRecords.filter(r => r.id !== id));
+  };
+
+  const handleExportData = () => {
+    const allData = {
+      feeding: feedingRecords,
+      sleep: sleepRecords,
+      diaper: diaperRecords,
+      health: healthRecords,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `baby-records-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -40,6 +104,7 @@ const Index = () => {
             onSleepClick={() => setCurrentView('sleep')}
             onDiaperClick={() => setCurrentView('diaper')}
             onHealthClick={() => setCurrentView('health')}
+            onExportClick={handleExportData}
           />
         )}
         
@@ -47,6 +112,8 @@ const Index = () => {
           <FeedingForm
             onBack={() => setCurrentView('dashboard')}
             onSave={handleSaveFeeding}
+            records={feedingRecords}
+            onDelete={handleDeleteFeeding}
           />
         )}
         
@@ -54,6 +121,8 @@ const Index = () => {
           <SleepForm
             onBack={() => setCurrentView('dashboard')}
             onSave={handleSaveSleep}
+            records={sleepRecords}
+            onDelete={handleDeleteSleep}
           />
         )}
         
@@ -61,6 +130,8 @@ const Index = () => {
           <DiaperForm
             onBack={() => setCurrentView('dashboard')}
             onSave={handleSaveDiaper}
+            records={diaperRecords}
+            onDelete={handleDeleteDiaper}
           />
         )}
         
@@ -68,6 +139,8 @@ const Index = () => {
           <HealthForm
             onBack={() => setCurrentView('dashboard')}
             onSave={handleSaveHealth}
+            records={healthRecords}
+            onDelete={handleDeleteHealth}
           />
         )}
       </div>

@@ -3,57 +3,87 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Check } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft, Save, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { DiaperRecord } from "@/types/baby";
 
 interface DiaperFormProps {
   onBack: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: DiaperRecord) => void;
+  records: DiaperRecord[];
+  onDelete: (id: string) => void;
 }
 
 const poopColors = [
-  { value: 'yellow', label: '黃色', color: 'bg-yellow-400', info: '正常' },
-  { value: 'green', label: '綠色', color: 'bg-green-500', info: '正常' },
-  { value: 'brown', label: '棕色', color: 'bg-amber-700', info: '正常' },
-  { value: 'black', label: '黑色', color: 'bg-gray-900', info: '注意' },
-  { value: 'red', label: '紅色', color: 'bg-red-500', info: '就醫' },
-  { value: 'white', label: '白色', color: 'bg-gray-100 border-2 border-gray-300', info: '就醫' },
+  { value: 'yellow', label: '黃色', color: 'bg-yellow-400' },
+  { value: 'green', label: '綠色', color: 'bg-green-500' },
+  { value: 'brown', label: '棕色', color: 'bg-amber-700' },
+  { value: 'black', label: '黑色', color: 'bg-gray-900' },
+  { value: 'red', label: '紅色', color: 'bg-red-500' },
+  { value: 'white', label: '白色', color: 'bg-gray-100 border-2 border-gray-300' },
 ];
 
-export const DiaperForm = ({ onBack, onSave }: DiaperFormProps) => {
+export const DiaperForm = ({ onBack, onSave, records, onDelete }: DiaperFormProps) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [diaperType, setDiaperType] = useState<string>("wet");
   const [poopColor, setPoopColor] = useState<string>("yellow");
   const [consistency, setConsistency] = useState<string>("soft");
+  const [notes, setNotes] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const data = {
-      id: Date.now().toString(),
+  const handleEdit = (record: DiaperRecord) => {
+    setEditingId(record.id);
+    setDiaperType(record.type);
+    setPoopColor(record.poopColor || "yellow");
+    setConsistency(record.consistency || "soft");
+    setNotes(record.notes || "");
+  };
+
+  const handleDelete = (id: string) => {
+    onDelete(id);
+    toast.success("記錄已刪除");
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setDiaperType("wet");
+    setPoopColor("yellow");
+    setConsistency("soft");
+    setNotes("");
+  };
+
+  const handleSubmit = () => {
+    const data: DiaperRecord = {
+      id: editingId || Date.now().toString(),
       timestamp: new Date().toISOString(),
-      type: diaperType,
-      poopColor: diaperType !== 'wet' ? poopColor : undefined,
-      consistency: diaperType !== 'wet' ? consistency : undefined,
+      type: diaperType as 'wet' | 'poop' | 'mixed',
+      poopColor: diaperType !== "wet" ? (poopColor as any) : undefined,
+      consistency: diaperType !== "wet" ? (consistency as any) : undefined,
+      notes: notes || undefined,
     };
 
     onSave(data);
-    toast.success("尿布記錄已儲存！", {
-      description: `記錄時間：${new Date().toLocaleTimeString('zh-TW')}`,
-    });
-    onBack();
+    toast.success(editingId ? "記錄已更新！" : "尿布記錄已儲存！");
+    resetForm();
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-2">
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h2 className="text-2xl font-bold">尿布記錄</h2>
+        <h2 className="text-2xl font-bold">{editingId ? "編輯" : ""}尿布記錄</h2>
       </div>
+      {editingId && (
+        <Button variant="ghost" size="sm" onClick={resetForm} className="mb-4">
+          取消編輯
+        </Button>
+      )}
 
       <Card className="p-6 shadow-card">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           <div className="space-y-3">
             <Label className="text-base font-semibold">尿布類型</Label>
             <RadioGroup value={diaperType} onValueChange={setDiaperType} className="space-y-2">
@@ -90,7 +120,6 @@ export const DiaperForm = ({ onBack, onSave }: DiaperFormProps) => {
                     >
                       <div className={`w-full h-8 rounded mb-2 ${color.color}`} />
                       <div className="text-sm font-medium">{color.label}</div>
-                      <div className="text-xs text-muted-foreground">{color.info}</div>
                     </button>
                   ))}
                 </div>
@@ -120,12 +149,76 @@ export const DiaperForm = ({ onBack, onSave }: DiaperFormProps) => {
             </>
           )}
 
-          <Button type="submit" className="w-full bg-gradient-to-r from-accent to-accent/80 hover:opacity-90">
-            <Check className="w-4 h-4 mr-2" />
-            儲存記錄
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">備註</Label>
+            <Textarea
+              placeholder="添加備註..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          <Button 
+            onClick={handleSubmit}
+            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:opacity-90"
+          >
+            <Save className="w-5 h-5 mr-2" />
+            {editingId ? "更新記錄" : "儲存記錄"}
           </Button>
-        </form>
+        </div>
       </Card>
+
+      {records.length > 0 && (
+        <Card className="p-6 shadow-card mt-6">
+          <h3 className="text-lg font-semibold mb-4">歷史記錄</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>時間</TableHead>
+                <TableHead>類型</TableHead>
+                <TableHead>詳情</TableHead>
+                <TableHead className="text-right">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {records.slice().reverse().map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell className="text-sm">
+                    {new Date(record.timestamp).toLocaleString('zh-TW')}
+                  </TableCell>
+                  <TableCell>
+                    {record.type === 'wet' && '尿濕'}
+                    {record.type === 'poop' && '大便'}
+                    {record.type === 'mixed' && '混合'}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {record.poopColor && `顏色: ${record.poopColor}`}
+                    {record.consistency && ` · ${record.consistency}`}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(record)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(record.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 };

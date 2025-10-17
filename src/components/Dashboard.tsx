@@ -1,4 +1,4 @@
-import { Baby, Calendar, Heart, Moon } from "lucide-react";
+import { Baby, Calendar, Heart, Moon, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -24,9 +24,10 @@ interface DashboardProps {
   onSleepClick: () => void;
   onDiaperClick: () => void;
   onHealthClick: () => void;
+  onExportClick: () => void;
 }
 
-export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick }: DashboardProps) => {
+export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onExportClick }: DashboardProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -35,6 +36,15 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
         </h1>
         <p className="text-muted-foreground">快速記錄寶寶的日常照護</p>
       </div>
+
+      <Button 
+        onClick={onExportClick}
+        variant="outline"
+        className="w-full"
+      >
+        <Download className="w-4 h-4 mr-2" />
+        導出所有記錄
+      </Button>
 
       <Card className="p-6 bg-gradient-to-br from-card to-muted/30 shadow-card">
         <div className="grid grid-cols-2 gap-4">
