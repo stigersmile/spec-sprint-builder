@@ -24,10 +24,11 @@ interface DashboardProps {
   onSleepClick: () => void;
   onDiaperClick: () => void;
   onHealthClick: () => void;
+  onHistoryClick: () => void;
   onExportClick: () => void;
 }
 
-export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onExportClick }: DashboardProps) => {
+export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onExportClick }: DashboardProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -37,14 +38,24 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
         <p className="text-muted-foreground">快速記錄寶寶的日常照護</p>
       </div>
 
-      <Button 
-        onClick={onExportClick}
-        variant="outline"
-        className="w-full"
-      >
-        <Download className="w-4 h-4 mr-2" />
-        導出所有記錄
-      </Button>
+      <div className="grid grid-cols-2 gap-4">
+        <Button
+          onClick={onHistoryClick}
+          variant="outline"
+          className="w-full"
+        >
+          <Calendar className="w-4 h-4 mr-2" />
+          歷史月曆
+        </Button>
+        <Button
+          onClick={onExportClick}
+          variant="outline"
+          className="w-full"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          導出記錄
+        </Button>
+      </div>
 
       <Card className="p-6 bg-gradient-to-br from-card to-muted/30 shadow-card">
         <div className="grid grid-cols-2 gap-4">

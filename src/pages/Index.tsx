@@ -4,9 +4,10 @@ import { FeedingForm } from "@/components/FeedingForm";
 import { SleepForm } from "@/components/SleepForm";
 import { DiaperForm } from "@/components/DiaperForm";
 import { HealthForm } from "@/components/HealthForm";
+import { CalendarHistoryView } from "@/components/CalendarHistoryView";
 import type { FeedingRecord, SleepRecord, DiaperRecord, HealthRecord } from "@/types/baby";
 
-type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health';
+type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health' | 'history';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
@@ -95,6 +96,12 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleEditFromHistory = (record: FeedingRecord | SleepRecord | DiaperRecord | HealthRecord, type: 'feeding' | 'sleep' | 'diaper' | 'health') => {
+    // Navigate to the appropriate form view
+    // The form component will handle the edit through its internal handleEdit function
+    setCurrentView(type);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
@@ -104,10 +111,29 @@ const Index = () => {
             onSleepClick={() => setCurrentView('sleep')}
             onDiaperClick={() => setCurrentView('diaper')}
             onHealthClick={() => setCurrentView('health')}
+            onHistoryClick={() => setCurrentView('history')}
             onExportClick={handleExportData}
           />
         )}
-        
+
+        {currentView === 'history' && (
+          <CalendarHistoryView
+            onBack={() => setCurrentView('dashboard')}
+            feedingRecords={feedingRecords}
+            sleepRecords={sleepRecords}
+            diaperRecords={diaperRecords}
+            healthRecords={healthRecords}
+            onEditFeeding={(record) => handleEditFromHistory(record, 'feeding')}
+            onEditSleep={(record) => handleEditFromHistory(record, 'sleep')}
+            onEditDiaper={(record) => handleEditFromHistory(record, 'diaper')}
+            onEditHealth={(record) => handleEditFromHistory(record, 'health')}
+            onDeleteFeeding={handleDeleteFeeding}
+            onDeleteSleep={handleDeleteSleep}
+            onDeleteDiaper={handleDeleteDiaper}
+            onDeleteHealth={handleDeleteHealth}
+          />
+        )}
+
         {currentView === 'feeding' && (
           <FeedingForm
             onBack={() => setCurrentView('dashboard')}
@@ -116,7 +142,7 @@ const Index = () => {
             onDelete={handleDeleteFeeding}
           />
         )}
-        
+
         {currentView === 'sleep' && (
           <SleepForm
             onBack={() => setCurrentView('dashboard')}
@@ -125,7 +151,7 @@ const Index = () => {
             onDelete={handleDeleteSleep}
           />
         )}
-        
+
         {currentView === 'diaper' && (
           <DiaperForm
             onBack={() => setCurrentView('dashboard')}
@@ -134,7 +160,7 @@ const Index = () => {
             onDelete={handleDeleteDiaper}
           />
         )}
-        
+
         {currentView === 'health' && (
           <HealthForm
             onBack={() => setCurrentView('dashboard')}
