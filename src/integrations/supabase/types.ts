@@ -14,7 +14,159 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      diaper_records: {
+        Row: {
+          consistency: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          poop_color: string | null
+          timestamp: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consistency?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          poop_color?: string | null
+          timestamp: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consistency?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          poop_color?: string | null
+          timestamp?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feeding_records: {
+        Row: {
+          amount: number | null
+          created_at: string
+          duration: number | null
+          id: string
+          notes: string | null
+          timestamp: string
+          type: string
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          timestamp: string
+          type: string
+          unit: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          timestamp?: string
+          type?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      health_records: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          notes: string | null
+          timestamp: string
+          type: string
+          unit: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          timestamp: string
+          type: string
+          unit: string
+          updated_at?: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          timestamp?: string
+          type?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      sleep_records: {
+        Row: {
+          created_at: string
+          duration: number | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          quality: string | null
+          start_time: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          quality?: string | null
+          start_time: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          quality?: string | null
+          start_time?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
