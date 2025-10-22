@@ -1,6 +1,9 @@
-import { Baby, Calendar, Heart, Moon, Download } from "lucide-react";
+import { Baby, Calendar, Heart, Moon, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuickActionProps {
   icon: React.ReactNode;
@@ -29,8 +32,39 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onExportClick }: DashboardProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logged out",
+        description: "You've been successfully logged out",
+      });
+      navigate("/auth");
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          登出
+        </Button>
+      </div>
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           智慧寶寶照護助手

@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
 import { Dashboard } from "@/components/Dashboard";
 import { FeedingForm } from "@/components/FeedingForm";
 import { SleepForm } from "@/components/SleepForm";
@@ -10,11 +13,41 @@ import type { FeedingRecord, SleepRecord, DiaperRecord, HealthRecord } from "@/t
 type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health' | 'history';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [feedingRecords, setFeedingRecords] = useState<FeedingRecord[]>([]);
   const [sleepRecords, setSleepRecords] = useState<SleepRecord[]>([]);
   const [diaperRecords, setDiaperRecords] = useState<DiaperRecord[]>([]);
   const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
+
+  useEffect(() => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
 
   const handleSaveFeeding = (data: FeedingRecord) => {
     const existingIndex = feedingRecords.findIndex(r => r.id === data.id);
