@@ -121,25 +121,8 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
       </Card>
 
       <Card className="p-6 shadow-card">
-        <h2 className="text-xl font-semibold mb-4">今日概況</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-4 bg-primary/10 rounded-lg">
-            <div className="text-2xl font-bold text-primary">8</div>
-            <div className="text-sm text-muted-foreground">次餵食</div>
-          </div>
-          <div className="text-center p-4 bg-secondary/10 rounded-lg">
-            <div className="text-2xl font-bold text-secondary">12h</div>
-            <div className="text-sm text-muted-foreground">總睡眠</div>
-          </div>
-          <div className="text-center p-4 bg-accent/10 rounded-lg">
-            <div className="text-2xl font-bold text-accent">6</div>
-            <div className="text-sm text-muted-foreground">換尿布</div>
-          </div>
-          <div className="text-center p-4 bg-chart-4/10 rounded-lg">
-            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--chart-4))' }}>37.2°C</div>
-            <div className="text-sm text-muted-foreground">體溫</div>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold mb-4">快速記錄</h2>
+        <p className="text-muted-foreground text-sm">使用上方按鈕開始記錄寶寶的日常活動</p>
       </Card>
     </div>
   );

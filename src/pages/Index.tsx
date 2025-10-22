@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 import { Dashboard } from "@/components/Dashboard";
 import { FeedingForm } from "@/components/FeedingForm";
 import { SleepForm } from "@/components/SleepForm";
@@ -14,6 +15,7 @@ type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health' | 'histo
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,6 @@ const Index = () => {
   const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
 
   useEffect(() => {
-    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -33,7 +34,6 @@ const Index = () => {
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -49,64 +49,339 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleSaveFeeding = (data: FeedingRecord) => {
-    const existingIndex = feedingRecords.findIndex(r => r.id === data.id);
-    if (existingIndex >= 0) {
-      const updated = [...feedingRecords];
-      updated[existingIndex] = data;
-      setFeedingRecords(updated);
-    } else {
-      setFeedingRecords([...feedingRecords, data]);
+  useEffect(() => {
+    if (user) {
+      fetchAllRecords();
+    }
+  }, [user]);
+
+  const fetchAllRecords = async () => {
+    try {
+      const [feedingRes, sleepRes, diaperRes, healthRes] = await Promise.all([
+        supabase.from('feeding_records').select('*').order('timestamp', { ascending: false }),
+        supabase.from('sleep_records').select('*').order('start_time', { ascending: false }),
+        supabase.from('diaper_records').select('*').order('timestamp', { ascending: false }),
+        supabase.from('health_records').select('*').order('timestamp', { ascending: false })
+      ]);
+
+      if (feedingRes.data) {
+        setFeedingRecords(feedingRes.data.map((r: any) => ({
+          id: r.id,
+          timestamp: r.timestamp,
+          type: r.type as FeedingRecord['type'],
+          amount: r.amount,
+          unit: r.unit as 'ml' | 'oz',
+          duration: r.duration,
+          notes: r.notes
+        })));
+      }
+      
+      if (sleepRes.data) {
+        setSleepRecords(sleepRes.data.map((r: any) => ({
+          id: r.id,
+          startTime: r.start_time,
+          endTime: r.end_time,
+          duration: r.duration,
+          type: r.type as 'night' | 'nap',
+          quality: r.quality as 'deep' | 'light' | 'restless' | undefined,
+          notes: r.notes
+        })));
+      }
+      
+      if (diaperRes.data) {
+        setDiaperRecords(diaperRes.data.map((r: any) => ({
+          id: r.id,
+          timestamp: r.timestamp,
+          type: r.type as 'wet' | 'poop' | 'mixed',
+          poopColor: r.poop_color as DiaperRecord['poopColor'],
+          consistency: r.consistency as DiaperRecord['consistency'],
+          notes: r.notes
+        })));
+      }
+      
+      if (healthRes.data) {
+        setHealthRecords(healthRes.data.map((r: any) => ({
+          id: r.id,
+          timestamp: r.timestamp,
+          type: r.type as 'temperature' | 'weight' | 'height' | 'head',
+          value: r.value,
+          unit: r.unit,
+          location: r.location as HealthRecord['location'],
+          notes: r.notes
+        })));
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch records",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteFeeding = (id: string) => {
-    setFeedingRecords(feedingRecords.filter(r => r.id !== id));
-  };
+  const handleSaveFeeding = async (data: FeedingRecord) => {
+    try {
+      const existingIndex = feedingRecords.findIndex(r => r.id === data.id);
+      
+      if (existingIndex >= 0) {
+        const { error } = await supabase
+          .from('feeding_records')
+          .update(data)
+          .eq('id', data.id);
+        
+        if (error) throw error;
+        
+        const updated = [...feedingRecords];
+        updated[existingIndex] = data;
+        setFeedingRecords(updated);
+      } else {
+        const { error } = await supabase
+          .from('feeding_records')
+          .insert([{ ...data, user_id: user?.id }]);
+        
+        if (error) throw error;
+        
+        await fetchAllRecords();
+      }
 
-  const handleSaveSleep = (data: SleepRecord) => {
-    const existingIndex = sleepRecords.findIndex(r => r.id === data.id);
-    if (existingIndex >= 0) {
-      const updated = [...sleepRecords];
-      updated[existingIndex] = data;
-      setSleepRecords(updated);
-    } else {
-      setSleepRecords([...sleepRecords, data]);
+      toast({
+        title: "Success",
+        description: "Feeding record saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save feeding record",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteSleep = (id: string) => {
-    setSleepRecords(sleepRecords.filter(r => r.id !== id));
-  };
-
-  const handleSaveDiaper = (data: DiaperRecord) => {
-    const existingIndex = diaperRecords.findIndex(r => r.id === data.id);
-    if (existingIndex >= 0) {
-      const updated = [...diaperRecords];
-      updated[existingIndex] = data;
-      setDiaperRecords(updated);
-    } else {
-      setDiaperRecords([...diaperRecords, data]);
+  const handleDeleteFeeding = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('feeding_records')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setFeedingRecords(feedingRecords.filter(r => r.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Feeding record deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete feeding record",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteDiaper = (id: string) => {
-    setDiaperRecords(diaperRecords.filter(r => r.id !== id));
-  };
+  const handleSaveSleep = async (data: SleepRecord) => {
+    try {
+      const dbData = {
+        start_time: data.startTime,
+        end_time: data.endTime,
+        duration: data.duration,
+        type: data.type,
+        quality: data.quality,
+        notes: data.notes
+      };
+      
+      const existingIndex = sleepRecords.findIndex(r => r.id === data.id);
+      
+      if (existingIndex >= 0) {
+        const { error } = await supabase
+          .from('sleep_records')
+          .update(dbData)
+          .eq('id', data.id);
+        
+        if (error) throw error;
+        
+        const updated = [...sleepRecords];
+        updated[existingIndex] = data;
+        setSleepRecords(updated);
+      } else {
+        const { error } = await supabase
+          .from('sleep_records')
+          .insert([{ ...dbData, user_id: user?.id }]);
+        
+        if (error) throw error;
+        
+        await fetchAllRecords();
+      }
 
-  const handleSaveHealth = (data: HealthRecord) => {
-    const existingIndex = healthRecords.findIndex(r => r.id === data.id);
-    if (existingIndex >= 0) {
-      const updated = [...healthRecords];
-      updated[existingIndex] = data;
-      setHealthRecords(updated);
-    } else {
-      setHealthRecords([...healthRecords, data]);
+      toast({
+        title: "Success",
+        description: "Sleep record saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save sleep record",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteHealth = (id: string) => {
-    setHealthRecords(healthRecords.filter(r => r.id !== id));
+  const handleDeleteSleep = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('sleep_records')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setSleepRecords(sleepRecords.filter(r => r.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Sleep record deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete sleep record",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveDiaper = async (data: DiaperRecord) => {
+    try {
+      const dbData = {
+        timestamp: data.timestamp,
+        type: data.type,
+        poop_color: data.poopColor,
+        consistency: data.consistency,
+        notes: data.notes
+      };
+      
+      const existingIndex = diaperRecords.findIndex(r => r.id === data.id);
+      
+      if (existingIndex >= 0) {
+        const { error } = await supabase
+          .from('diaper_records')
+          .update(dbData)
+          .eq('id', data.id);
+        
+        if (error) throw error;
+        
+        const updated = [...diaperRecords];
+        updated[existingIndex] = data;
+        setDiaperRecords(updated);
+      } else {
+        const { error } = await supabase
+          .from('diaper_records')
+          .insert([{ ...dbData, user_id: user?.id }]);
+        
+        if (error) throw error;
+        
+        await fetchAllRecords();
+      }
+
+      toast({
+        title: "Success",
+        description: "Diaper record saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save diaper record",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteDiaper = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('diaper_records')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setDiaperRecords(diaperRecords.filter(r => r.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Diaper record deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete diaper record",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveHealth = async (data: HealthRecord) => {
+    try {
+      const existingIndex = healthRecords.findIndex(r => r.id === data.id);
+      
+      if (existingIndex >= 0) {
+        const { error } = await supabase
+          .from('health_records')
+          .update(data)
+          .eq('id', data.id);
+        
+        if (error) throw error;
+        
+        const updated = [...healthRecords];
+        updated[existingIndex] = data;
+        setHealthRecords(updated);
+      } else {
+        const { error } = await supabase
+          .from('health_records')
+          .insert([{ ...data, user_id: user?.id }]);
+        
+        if (error) throw error;
+        
+        await fetchAllRecords();
+      }
+
+      toast({
+        title: "Success",
+        description: "Health record saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save health record",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteHealth = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('health_records')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setHealthRecords(healthRecords.filter(r => r.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Health record deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete health record",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleExportData = () => {
@@ -130,10 +405,12 @@ const Index = () => {
   };
 
   const handleEditFromHistory = (record: FeedingRecord | SleepRecord | DiaperRecord | HealthRecord, type: 'feeding' | 'sleep' | 'diaper' | 'health') => {
-    // Navigate to the appropriate form view
-    // The form component will handle the edit through its internal handleEdit function
     setCurrentView(type);
   };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 p-4 md:p-8">
