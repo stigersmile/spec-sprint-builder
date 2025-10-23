@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Check, Play, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,8 @@ export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps)
   const [isTracking, setIsTracking] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [sleepType, setSleepType] = useState<string>("nap");
+  const [inputMode, setInputMode] = useState<"track" | "manual">("track");
+  const [manualDuration, setManualDuration] = useState<number>(60);
 
   const handleStartTracking = () => {
     setStartTime(new Date());
@@ -49,6 +52,24 @@ export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps)
     setStartTime(null);
   };
 
+  const handleManualSave = () => {
+    const now = new Date();
+    const startTime = new Date(now.getTime() - manualDuration * 60 * 1000);
+
+    const data: SleepRecord = {
+      id: '',
+      startTime: startTime.toISOString(),
+      endTime: now.toISOString(),
+      duration: manualDuration,
+      type: sleepType as 'night' | 'nap',
+    };
+
+    onSave(data);
+    toast.success("睡眠記錄已儲存！", {
+      description: `睡眠時長：${Math.floor(manualDuration / 60)}小時${manualDuration % 60}分鐘`,
+    });
+  };
+
   const handleDelete = (id: string) => {
     onDelete(id);
     toast.success("記錄已刪除");
@@ -66,6 +87,20 @@ export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps)
       <Card className="p-6 shadow-card">
         <div className="space-y-6">
           <div className="space-y-3">
+            <Label className="text-base font-semibold">記錄方式</Label>
+            <RadioGroup value={inputMode} onValueChange={(v) => setInputMode(v as "track" | "manual")} className="space-y-2">
+              <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value="track" id="track" />
+                <Label htmlFor="track" className="cursor-pointer flex-1">即時追蹤</Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value="manual" id="manual" />
+                <Label htmlFor="manual" className="cursor-pointer flex-1">手動輸入</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-3">
             <Label className="text-base font-semibold">睡眠類型</Label>
             <RadioGroup value={sleepType} onValueChange={setSleepType} className="space-y-2">
               <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -79,28 +114,60 @@ export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps)
             </RadioGroup>
           </div>
 
-          {!isTracking ? (
-            <Button 
-              onClick={handleStartTracking}
-              className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90 h-16 text-lg"
-            >
-              <Play className="w-6 h-6 mr-2" />
-              開始記錄睡眠
-            </Button>
+          {inputMode === "track" ? (
+            !isTracking ? (
+              <Button 
+                onClick={handleStartTracking}
+                className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:opacity-90 h-16 text-lg"
+              >
+                <Play className="w-6 h-6 mr-2" />
+                開始記錄睡眠
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-center p-6 bg-secondary/10 rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-2">正在記錄中...</div>
+                  <div className="text-3xl font-bold text-secondary">
+                    {startTime && new Date(startTime).toLocaleTimeString('zh-TW')}
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleStopTracking}
+                  className="w-full bg-gradient-to-r from-accent to-accent/80 hover:opacity-90 h-16 text-lg"
+                >
+                  <Check className="w-6 h-6 mr-2" />
+                  結束並儲存
+                </Button>
+              </div>
+            )
           ) : (
             <div className="space-y-4">
-              <div className="text-center p-6 bg-secondary/10 rounded-lg">
-                <div className="text-sm text-muted-foreground mb-2">正在記錄中...</div>
-                <div className="text-3xl font-bold text-secondary">
-                  {startTime && new Date(startTime).toLocaleTimeString('zh-TW')}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">睡眠時長</Label>
+                  <span className="text-lg font-bold text-primary">
+                    {Math.floor(manualDuration / 60)}小時 {manualDuration % 60}分鐘
+                  </span>
+                </div>
+                <Slider
+                  value={[manualDuration]}
+                  onValueChange={(value) => setManualDuration(value[0])}
+                  min={15}
+                  max={720}
+                  step={15}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>15分鐘</span>
+                  <span>12小時</span>
                 </div>
               </div>
               <Button 
-                onClick={handleStopTracking}
+                onClick={handleManualSave}
                 className="w-full bg-gradient-to-r from-accent to-accent/80 hover:opacity-90 h-16 text-lg"
               >
                 <Check className="w-6 h-6 mr-2" />
-                結束並儲存
+                儲存記錄
               </Button>
             </div>
           )}
