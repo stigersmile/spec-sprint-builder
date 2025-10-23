@@ -50,7 +50,7 @@ export const FeedingForm = ({ onBack, onSave, records, onDelete }: FeedingFormPr
 
   const handleSubmit = () => {
     const data: FeedingRecord = {
-      id: editingId || Date.now().toString(),
+      id: editingId || '',
       timestamp: new Date().toISOString(),
       type: feedingType as any,
       amount: amount ? parseFloat(amount) : undefined,

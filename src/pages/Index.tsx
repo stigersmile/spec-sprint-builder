@@ -121,23 +121,36 @@ const Index = () => {
 
   const handleSaveFeeding = async (data: FeedingRecord) => {
     try {
-      const existingIndex = feedingRecords.findIndex(r => r.id === data.id);
-      
-      if (existingIndex >= 0) {
+      if (data.id) {
+        // Update existing record
         const { error } = await supabase
           .from('feeding_records')
-          .update(data)
+          .update({
+            timestamp: data.timestamp,
+            type: data.type,
+            amount: data.amount,
+            unit: data.unit,
+            duration: data.duration,
+            notes: data.notes
+          })
           .eq('id', data.id);
         
         if (error) throw error;
         
-        const updated = [...feedingRecords];
-        updated[existingIndex] = data;
-        setFeedingRecords(updated);
+        await fetchAllRecords();
       } else {
+        // Insert new record (database will generate UUID)
         const { error } = await supabase
           .from('feeding_records')
-          .insert([{ ...data, user_id: user?.id }]);
+          .insert([{ 
+            timestamp: data.timestamp,
+            type: data.type,
+            amount: data.amount,
+            unit: data.unit,
+            duration: data.duration,
+            notes: data.notes,
+            user_id: user?.id 
+          }]);
         
         if (error) throw error;
         
@@ -192,9 +205,8 @@ const Index = () => {
         notes: data.notes
       };
       
-      const existingIndex = sleepRecords.findIndex(r => r.id === data.id);
-      
-      if (existingIndex >= 0) {
+      if (data.id) {
+        // Update existing record
         const { error } = await supabase
           .from('sleep_records')
           .update(dbData)
@@ -202,10 +214,9 @@ const Index = () => {
         
         if (error) throw error;
         
-        const updated = [...sleepRecords];
-        updated[existingIndex] = data;
-        setSleepRecords(updated);
+        await fetchAllRecords();
       } else {
+        // Insert new record (database will generate UUID)
         const { error } = await supabase
           .from('sleep_records')
           .insert([{ ...dbData, user_id: user?.id }]);
@@ -262,9 +273,8 @@ const Index = () => {
         notes: data.notes
       };
       
-      const existingIndex = diaperRecords.findIndex(r => r.id === data.id);
-      
-      if (existingIndex >= 0) {
+      if (data.id) {
+        // Update existing record
         const { error } = await supabase
           .from('diaper_records')
           .update(dbData)
@@ -272,10 +282,9 @@ const Index = () => {
         
         if (error) throw error;
         
-        const updated = [...diaperRecords];
-        updated[existingIndex] = data;
-        setDiaperRecords(updated);
+        await fetchAllRecords();
       } else {
+        // Insert new record (database will generate UUID)
         const { error } = await supabase
           .from('diaper_records')
           .insert([{ ...dbData, user_id: user?.id }]);
@@ -324,23 +333,36 @@ const Index = () => {
 
   const handleSaveHealth = async (data: HealthRecord) => {
     try {
-      const existingIndex = healthRecords.findIndex(r => r.id === data.id);
-      
-      if (existingIndex >= 0) {
+      if (data.id) {
+        // Update existing record
         const { error } = await supabase
           .from('health_records')
-          .update(data)
+          .update({
+            timestamp: data.timestamp,
+            type: data.type,
+            value: data.value,
+            unit: data.unit,
+            location: data.location,
+            notes: data.notes
+          })
           .eq('id', data.id);
         
         if (error) throw error;
         
-        const updated = [...healthRecords];
-        updated[existingIndex] = data;
-        setHealthRecords(updated);
+        await fetchAllRecords();
       } else {
+        // Insert new record (database will generate UUID)
         const { error } = await supabase
           .from('health_records')
-          .insert([{ ...data, user_id: user?.id }]);
+          .insert([{ 
+            timestamp: data.timestamp,
+            type: data.type,
+            value: data.value,
+            unit: data.unit,
+            location: data.location,
+            notes: data.notes,
+            user_id: user?.id 
+          }]);
         
         if (error) throw error;
         

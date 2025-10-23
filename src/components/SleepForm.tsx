@@ -33,7 +33,7 @@ export const SleepForm = ({ onBack, onSave, records, onDelete }: SleepFormProps)
     const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000 / 60);
 
     const data: SleepRecord = {
-      id: Date.now().toString(),
+      id: '',
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       duration,

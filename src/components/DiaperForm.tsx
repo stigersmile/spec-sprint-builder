@@ -55,7 +55,7 @@ export const DiaperForm = ({ onBack, onSave, records, onDelete }: DiaperFormProp
 
   const handleSubmit = () => {
     const data: DiaperRecord = {
-      id: editingId || Date.now().toString(),
+      id: editingId || '',
       timestamp: new Date().toISOString(),
       type: diaperType as 'wet' | 'poop' | 'mixed',
       poopColor: diaperType !== "wet" ? (poopColor as any) : undefined,

@@ -63,7 +63,7 @@ export const HealthForm = ({ onBack, onSave, records, onDelete }: HealthFormProp
     }
 
     const data: HealthRecord = {
-      id: editingId || Date.now().toString(),
+      id: editingId || '',
       timestamp: new Date().toISOString(),
       type: healthType as any,
       value: parseFloat(value),
