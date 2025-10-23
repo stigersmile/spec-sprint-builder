@@ -1,4 +1,4 @@
-import { Baby, Calendar, Heart, Moon, Download, LogOut } from "lucide-react";
+import { Baby, Calendar, Heart, Moon, Download, LogOut, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,10 +28,11 @@ interface DashboardProps {
   onDiaperClick: () => void;
   onHealthClick: () => void;
   onHistoryClick: () => void;
+  onChartsClick: () => void;
   onExportClick: () => void;
 }
 
-export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onExportClick }: DashboardProps) => {
+export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onChartsClick, onExportClick }: DashboardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -72,7 +73,7 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
         <p className="text-muted-foreground">快速記錄寶寶的日常照護</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Button
           onClick={onHistoryClick}
           variant="outline"
@@ -80,6 +81,14 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
         >
           <Calendar className="w-4 h-4 mr-2" />
           歷史月曆
+        </Button>
+        <Button
+          onClick={onChartsClick}
+          variant="outline"
+          className="w-full"
+        >
+          <BarChart3 className="w-4 h-4 mr-2" />
+          數據圖表
         </Button>
         <Button
           onClick={onExportClick}
