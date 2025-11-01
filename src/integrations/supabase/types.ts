@@ -14,80 +14,8 @@ export type Database = {
   }
   public: {
     Tables: {
-      babies: {
-        Row: {
-          birth_date: string
-          created_at: string
-          created_by: string
-          gender: string | null
-          id: string
-          name: string
-          photo: string | null
-          updated_at: string
-        }
-        Insert: {
-          birth_date: string
-          created_at?: string
-          created_by: string
-          gender?: string | null
-          id?: string
-          name: string
-          photo?: string | null
-          updated_at?: string
-        }
-        Update: {
-          birth_date?: string
-          created_at?: string
-          created_by?: string
-          gender?: string | null
-          id?: string
-          name?: string
-          photo?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      baby_caregivers: {
-        Row: {
-          baby_id: string
-          created_at: string
-          id: string
-          invited_at: string | null
-          invited_by: string | null
-          role: Database["public"]["Enums"]["caregiver_role"]
-          user_id: string
-        }
-        Insert: {
-          baby_id: string
-          created_at?: string
-          id?: string
-          invited_at?: string | null
-          invited_by?: string | null
-          role?: Database["public"]["Enums"]["caregiver_role"]
-          user_id: string
-        }
-        Update: {
-          baby_id?: string
-          created_at?: string
-          id?: string
-          invited_at?: string | null
-          invited_by?: string | null
-          role?: Database["public"]["Enums"]["caregiver_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "baby_caregivers_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       diaper_records: {
         Row: {
-          baby_id: string
           consistency: string | null
           created_at: string
           id: string
@@ -96,9 +24,9 @@ export type Database = {
           timestamp: string
           type: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          baby_id: string
           consistency?: string | null
           created_at?: string
           id?: string
@@ -107,9 +35,9 @@ export type Database = {
           timestamp: string
           type: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          baby_id?: string
           consistency?: string | null
           created_at?: string
           id?: string
@@ -118,21 +46,13 @@ export type Database = {
           timestamp?: string
           type?: string
           updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "diaper_records_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       feeding_records: {
         Row: {
           amount: number | null
-          baby_id: string
           created_at: string
           duration: number | null
           id: string
@@ -141,10 +61,10 @@ export type Database = {
           type: string
           unit: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           amount?: number | null
-          baby_id: string
           created_at?: string
           duration?: number | null
           id?: string
@@ -153,10 +73,10 @@ export type Database = {
           type: string
           unit: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           amount?: number | null
-          baby_id?: string
           created_at?: string
           duration?: number | null
           id?: string
@@ -165,20 +85,12 @@ export type Database = {
           type?: string
           unit?: string
           updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "feeding_records_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       health_records: {
         Row: {
-          baby_id: string
           created_at: string
           id: string
           location: string | null
@@ -187,10 +99,10 @@ export type Database = {
           type: string
           unit: string
           updated_at: string
+          user_id: string
           value: number
         }
         Insert: {
-          baby_id: string
           created_at?: string
           id?: string
           location?: string | null
@@ -199,10 +111,10 @@ export type Database = {
           type: string
           unit: string
           updated_at?: string
+          user_id: string
           value: number
         }
         Update: {
-          baby_id?: string
           created_at?: string
           id?: string
           location?: string | null
@@ -211,65 +123,13 @@ export type Database = {
           type?: string
           unit?: string
           updated_at?: string
+          user_id?: string
           value?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "health_records_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invitations: {
-        Row: {
-          accepted_at: string | null
-          baby_id: string
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          invited_by: string
-          role: Database["public"]["Enums"]["caregiver_role"]
-          token: string
-        }
-        Insert: {
-          accepted_at?: string | null
-          baby_id: string
-          created_at?: string
-          email: string
-          expires_at: string
-          id?: string
-          invited_by: string
-          role?: Database["public"]["Enums"]["caregiver_role"]
-          token: string
-        }
-        Update: {
-          accepted_at?: string | null
-          baby_id?: string
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          invited_by?: string
-          role?: Database["public"]["Enums"]["caregiver_role"]
-          token?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invitations_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       sleep_records: {
         Row: {
-          baby_id: string
           created_at: string
           duration: number | null
           end_time: string | null
@@ -279,9 +139,9 @@ export type Database = {
           start_time: string
           type: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          baby_id: string
           created_at?: string
           duration?: number | null
           end_time?: string | null
@@ -291,9 +151,9 @@ export type Database = {
           start_time: string
           type: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          baby_id?: string
           created_at?: string
           duration?: number | null
           end_time?: string | null
@@ -303,37 +163,19 @@ export type Database = {
           start_time?: string
           type?: string
           updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sleep_records_baby_id_fkey"
-            columns: ["baby_id"]
-            isOneToOne: false
-            referencedRelation: "babies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_user_baby_role: {
-        Args: { p_baby_id: string; p_user_id: string }
-        Returns: Database["public"]["Enums"]["caregiver_role"]
-      }
-      user_can_edit_baby: {
-        Args: { p_baby_id: string; p_user_id: string }
-        Returns: boolean
-      }
-      user_has_baby_access: {
-        Args: { p_baby_id: string; p_user_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      caregiver_role: "owner" | "editor" | "viewer"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -460,8 +302,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      caregiver_role: ["owner", "editor", "viewer"],
-    },
+    Enums: {},
   },
 } as const
