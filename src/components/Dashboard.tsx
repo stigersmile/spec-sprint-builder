@@ -30,9 +30,10 @@ interface DashboardProps {
   onHistoryClick: () => void;
   onChartsClick: () => void;
   onExportClick: () => void;
+  onProfileClick: () => void;
 }
 
-export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onChartsClick, onExportClick }: DashboardProps) => {
+export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealthClick, onHistoryClick, onChartsClick, onExportClick, onProfileClick }: DashboardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,7 +56,16 @@ export const Dashboard = ({ onFeedingClick, onSleepClick, onDiaperClick, onHealt
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <Button
+          onClick={onProfileClick}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <Baby className="w-4 h-4" />
+          寶寶資料
+        </Button>
         <Button
           onClick={handleLogout}
           variant="outline"

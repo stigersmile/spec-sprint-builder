@@ -10,9 +10,10 @@ import { DiaperForm } from "@/components/DiaperForm";
 import { HealthForm } from "@/components/HealthForm";
 import { CalendarHistoryView } from "@/components/CalendarHistoryView";
 import { StatsCharts } from "@/components/StatsCharts";
+import { BabyProfile } from "@/components/BabyProfile";
 import type { FeedingRecord, SleepRecord, DiaperRecord, HealthRecord } from "@/types/baby";
 
-type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health' | 'history' | 'charts';
+type ViewType = 'dashboard' | 'feeding' | 'sleep' | 'diaper' | 'health' | 'history' | 'charts' | 'profile';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -478,6 +479,14 @@ const Index = () => {
             onHistoryClick={() => setCurrentView('history')}
             onChartsClick={() => setCurrentView('charts')}
             onExportClick={handleExportData}
+            onProfileClick={() => setCurrentView('profile')}
+          />
+        )}
+
+        {currentView === 'profile' && currentBabyId && (
+          <BabyProfile
+            babyId={currentBabyId}
+            onBack={() => setCurrentView('dashboard')}
           />
         )}
 
