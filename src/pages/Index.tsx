@@ -21,6 +21,7 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [currentBabyId, setCurrentBabyId] = useState<string | null>(null);
   const [feedingRecords, setFeedingRecords] = useState<FeedingRecord[]>([]);
   const [sleepRecords, setSleepRecords] = useState<SleepRecord[]>([]);
   const [diaperRecords, setDiaperRecords] = useState<DiaperRecord[]>([]);
@@ -52,17 +53,47 @@ const Index = () => {
 
   useEffect(() => {
     if (user) {
-      fetchAllRecords();
+      fetchCurrentBaby();
     }
   }, [user]);
 
+  useEffect(() => {
+    if (currentBabyId) {
+      fetchAllRecords();
+    }
+  }, [currentBabyId]);
+
+  const fetchCurrentBaby = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('baby_caregivers' as any)
+        .select('baby_id')
+        .eq('user_id', user?.id)
+        .single() as any;
+      
+      if (error) throw error;
+      
+      if (data) {
+        setCurrentBabyId(data.baby_id);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch baby information",
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchAllRecords = async () => {
+    if (!currentBabyId) return;
+    
     try {
       const [feedingRes, sleepRes, diaperRes, healthRes] = await Promise.all([
-        supabase.from('feeding_records').select('*').order('timestamp', { ascending: false }),
-        supabase.from('sleep_records').select('*').order('start_time', { ascending: false }),
-        supabase.from('diaper_records').select('*').order('timestamp', { ascending: false }),
-        supabase.from('health_records').select('*').order('timestamp', { ascending: false })
+        supabase.from('feeding_records' as any).select('*').eq('baby_id', currentBabyId).order('timestamp', { ascending: false }),
+        supabase.from('sleep_records' as any).select('*').eq('baby_id', currentBabyId).order('start_time', { ascending: false }),
+        supabase.from('diaper_records' as any).select('*').eq('baby_id', currentBabyId).order('timestamp', { ascending: false }),
+        supabase.from('health_records' as any).select('*').eq('baby_id', currentBabyId).order('timestamp', { ascending: false })
       ]);
 
       if (feedingRes.data) {
@@ -125,7 +156,7 @@ const Index = () => {
       if (data.id) {
         // Update existing record
         const { error } = await supabase
-          .from('feeding_records')
+          .from('feeding_records' as any)
           .update({
             timestamp: data.timestamp,
             type: data.type,
@@ -142,7 +173,7 @@ const Index = () => {
       } else {
         // Insert new record (database will generate UUID)
         const { error } = await supabase
-          .from('feeding_records')
+          .from('feeding_records' as any)
           .insert([{ 
             timestamp: data.timestamp,
             type: data.type,
@@ -150,8 +181,8 @@ const Index = () => {
             unit: data.unit,
             duration: data.duration,
             notes: data.notes,
-            user_id: user?.id 
-          }]);
+            baby_id: currentBabyId 
+          }] as any);
         
         if (error) throw error;
         
@@ -174,7 +205,7 @@ const Index = () => {
   const handleDeleteFeeding = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('feeding_records')
+        .from('feeding_records' as any)
         .delete()
         .eq('id', id);
       
@@ -209,7 +240,7 @@ const Index = () => {
       if (data.id) {
         // Update existing record
         const { error } = await supabase
-          .from('sleep_records')
+          .from('sleep_records' as any)
           .update(dbData)
           .eq('id', data.id);
         
@@ -219,8 +250,8 @@ const Index = () => {
       } else {
         // Insert new record (database will generate UUID)
         const { error } = await supabase
-          .from('sleep_records')
-          .insert([{ ...dbData, user_id: user?.id }]);
+          .from('sleep_records' as any)
+          .insert([{ ...dbData, baby_id: currentBabyId }] as any);
         
         if (error) throw error;
         
@@ -243,7 +274,7 @@ const Index = () => {
   const handleDeleteSleep = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('sleep_records')
+        .from('sleep_records' as any)
         .delete()
         .eq('id', id);
       
@@ -277,7 +308,7 @@ const Index = () => {
       if (data.id) {
         // Update existing record
         const { error } = await supabase
-          .from('diaper_records')
+          .from('diaper_records' as any)
           .update(dbData)
           .eq('id', data.id);
         
@@ -287,8 +318,8 @@ const Index = () => {
       } else {
         // Insert new record (database will generate UUID)
         const { error } = await supabase
-          .from('diaper_records')
-          .insert([{ ...dbData, user_id: user?.id }]);
+          .from('diaper_records' as any)
+          .insert([{ ...dbData, baby_id: currentBabyId }] as any);
         
         if (error) throw error;
         
@@ -311,7 +342,7 @@ const Index = () => {
   const handleDeleteDiaper = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('diaper_records')
+        .from('diaper_records' as any)
         .delete()
         .eq('id', id);
       
@@ -337,7 +368,7 @@ const Index = () => {
       if (data.id) {
         // Update existing record
         const { error } = await supabase
-          .from('health_records')
+          .from('health_records' as any)
           .update({
             timestamp: data.timestamp,
             type: data.type,
@@ -354,7 +385,7 @@ const Index = () => {
       } else {
         // Insert new record (database will generate UUID)
         const { error } = await supabase
-          .from('health_records')
+          .from('health_records' as any)
           .insert([{ 
             timestamp: data.timestamp,
             type: data.type,
@@ -362,8 +393,8 @@ const Index = () => {
             unit: data.unit,
             location: data.location,
             notes: data.notes,
-            user_id: user?.id 
-          }]);
+            baby_id: currentBabyId 
+          }] as any);
         
         if (error) throw error;
         
@@ -386,7 +417,7 @@ const Index = () => {
   const handleDeleteHealth = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('health_records')
+        .from('health_records' as any)
         .delete()
         .eq('id', id);
       
