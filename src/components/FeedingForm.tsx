@@ -25,19 +25,6 @@ export const FeedingForm = ({ onBack, onSave, records, onDelete }: FeedingFormPr
   const [duration, setDuration] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
-  // Helper function to convert ISO string to datetime-local format
-  const toDatetimeLocal = (isoString: string) => {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  const [timestamp, setTimestamp] = useState<string>(toDatetimeLocal(new Date().toISOString()));
-
   const handleEdit = (record: FeedingRecord) => {
     setEditingId(record.id);
     setFeedingType(record.type);
@@ -45,7 +32,6 @@ export const FeedingForm = ({ onBack, onSave, records, onDelete }: FeedingFormPr
     setUnit(record.unit);
     setDuration(record.duration?.toString() || "");
     setNotes(record.notes || "");
-    setTimestamp(toDatetimeLocal(record.timestamp));
   };
 
   const handleDelete = (id: string) => {
@@ -60,13 +46,12 @@ export const FeedingForm = ({ onBack, onSave, records, onDelete }: FeedingFormPr
     setUnit("ml");
     setDuration("");
     setNotes("");
-    setTimestamp(toDatetimeLocal(new Date().toISOString()));
   };
 
   const handleSubmit = () => {
     const data: FeedingRecord = {
       id: editingId || '',
-      timestamp: new Date(timestamp).toISOString(),
+      timestamp: new Date().toISOString(),
       type: feedingType as any,
       amount: amount ? parseFloat(amount) : undefined,
       unit: unit as 'ml' | 'oz',
@@ -142,15 +127,6 @@ export const FeedingForm = ({ onBack, onSave, records, onDelete }: FeedingFormPr
                 </div>
               </RadioGroup>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-base font-semibold">開始時間</Label>
-            <Input
-              type="datetime-local"
-              value={timestamp}
-              onChange={(e) => setTimestamp(e.target.value)}
-            />
           </div>
 
           <div className="space-y-3">
